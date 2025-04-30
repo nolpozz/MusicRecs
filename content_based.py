@@ -11,4 +11,6 @@ def recommend_content_based(artist_id, tfidf_matrix, artist_index, top_n=10):
     # Get the top N similar artists
     similar_indices = cosine_similarities.argsort()[:-top_n-1:-1]
 
+    
+
     return similar_indices

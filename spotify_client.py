@@ -64,6 +64,10 @@ class SpotifyClient:
         results = self.sp.artist_related_artists(artist_id)
         return [artist['id'] for artist in results['artists']]
 
+    def get_artist_name(self, artist_id):
+        artist = self.sp.artist(artist_id)
+        return artist['name']
+
     def get_user_top_tracks(self, limit=50, time_range='medium_term'):
         results = self.sp.current_user_top_tracks(limit=limit, time_range=time_range)
         return [track['id'] for track in results['items']]

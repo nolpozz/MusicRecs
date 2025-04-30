@@ -20,8 +20,11 @@ def hybrid_recommendation_system(spotify_client, top_n=10):
 
     # Create artist index mapping
     artist_index = pd.Series(df.index, index=df['artist_id']).to_dict()
+    index_artist = {v: k for k, v in artist_index.items()}
+
 
     # Content-based recommendations
+    print(sp.get_artist_name(top_artists[1]))
     content_recommendations = recommend_content_based(top_artists[1], tfidf_matrix, artist_index, top_n=top_n)
 
     # Collaborative filtering recommendations
@@ -33,7 +36,10 @@ def hybrid_recommendation_system(spotify_client, top_n=10):
     # unique_recommendations = np.unique(final_recommendations)
 
     # return unique_recommendations[:top_n]
-    return content_recommendations[:top_n]
+    recs = []
+    for i in range(top_n):
+        recs.append(sp.get_artist_name(index_artist.get(content_recommendations[i])))
+    return recs
 
 if __name__ == "__main__":
 
