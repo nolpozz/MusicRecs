@@ -5,14 +5,14 @@ from flask import Flask, request
 import threading
 import webbrowser
 
-class SpotifyClient:
+class MySpotifyClient:
     def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.sp = None
         self.auth_code = None
-
+        self.auth_event = threading.Event()
         self.authenticate()
 
     def authenticate(self):
@@ -27,16 +27,21 @@ class SpotifyClient:
 
         auth_url = self.oauth.get_authorize_url()
 
-        print(f"Opening {auth_url} in your browser...")
+        print(f"Opening {auth_url} in browser...")
         webbrowser.open(auth_url)
 
         app = Flask(__name__)
 
         @app.route('/callback')
         def callback():
-            self.auth_code = request.args.get('code')
-            threading.Thread(target=lambda: app.shutdown()).start()  # Shut down Flask server after receiving code
-            return "Authorization successful! You can close this tab."
+            code = request.args.get('code')
+            self.auth_code = code
+            shutdown_func = request.environ.get('werkzeug.server.shutdown')
+            if shutdown_func:
+                shutdown_func()
+            self.auth_event.set()
+            return "Authentication successful. You can close this window."
+
 
         def run_server():
             app.run(host='127.0.0.1', port=8000, debug=True, use_reloader = False)
@@ -44,13 +49,16 @@ class SpotifyClient:
         server_thread = threading.Thread(target=run_server)
         server_thread.start()
 
-        while self.auth_code is None:
-            pass
+        self.auth_event.wait()
+
+        server_thread.join(timeout=1)
 
         token_info = self.oauth.get_access_token(self.auth_code)
         self.sp = spotipy.Spotify(auth=token_info['access_token'])
 
         print("Successfully authenticated with Spotify!")
+
+
 
     def get_user_top_artists(self, limit=20, time_range='medium_term'):
         results = self.sp.current_user_top_artists(limit=limit, time_range=time_range)

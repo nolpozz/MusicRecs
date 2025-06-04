@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
 
-from spotify_client import SpotifyClient
+# from spotify_client import SpotifyClient
 from data_processing import preprocess_data, vectorize_genres
 from content_based import recommend_content_based
 from collaborative_filtering import train_als_model, recommend_collaborative
 
 import os
 from dotenv import load_dotenv
+import spotify_client
 
 def hybrid_recommendation_system(spotify_client, top_n=10):
 
@@ -49,7 +50,8 @@ if __name__ == "__main__":
     CLIENT_SECRET = os.getenv("MY_CLIENT_SECRET")
     REDIRECT_URI = 'http://127.0.0.1:8000/callback'
 
-    spotify_client = SpotifyClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+    spotify_client = spotify_client.MySpotifyClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
     recommendations = hybrid_recommendation_system(spotify_client)
     print("Recommended Artists:", recommendations)
+    print("end")
